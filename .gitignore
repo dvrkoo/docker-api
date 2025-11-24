@@ -52,7 +52,12 @@ venv.bak/
 *.swp
 *.swo
 *~
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
 
 # Project specific
 input/*
