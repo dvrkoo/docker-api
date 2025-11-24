@@ -1,21 +1,73 @@
+# Python artifacts
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.pyo
+*.pyd
+
+# Virtual environments
 env/
 venv/
 .venv/
 ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
 *.egg-info/
 dist/
 build/
+*.egg
+
+# Version control
 .git/
 .gitignore
+.gitattributes
+
+# OS files
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Documentation
 *.md
+docs/
+
+# Data directories (use volumes instead)
 input/
 output/
+test_input/
+test_output/
+
+# Testing
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+.tox/
+.hypothesis/
+tests/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.project
+.pydevproject
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Development dependencies
+requirements-dev.txt
+pytest.ini
+.flake8
+mypy.ini
+.mypy_cache/
