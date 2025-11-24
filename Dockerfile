@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir torch torchvision torchaudio opencv-python numpy Pillow watchdog pytorch-lightning matplotlib && \
-    pip install --no-cache-dir dlib --verbose
+    pip install --no-cache-dir dlib-bin
 
 COPY . .
 
