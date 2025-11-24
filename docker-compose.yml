@@ -1,0 +1,39 @@
+services:
+  faceforensics-api:
+    build: .
+    container_name: faceforensics-detector
+    volumes:
+      - ./input:/data/input
+      - ./output:/data/output
+      - ../FaceForensicsTrainer/playerModules:/app/playerModules:ro
+      - ../FaceForensicsTrainer/network:/app/network:ro
+      - ../FaceForensicsTrainer/trained_models:/app/trained_models:ro
+      - ../FaceForensicsTrainer/dataset:/app/dataset:ro
+    environment:
+      - WATCH_FOLDER=/data/input
+      - OUTPUT_FOLDER=/data/output
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles:
+      - gpu
+
+  faceforensics-api-cpu:
+    build: .
+    container_name: faceforensics-detector-cpu
+    volumes:
+      - ./input:/data/input
+      - ./output:/data/output
+      - ../FaceForensicsTrainer/playerModules:/app/playerModules:ro
+      - ../FaceForensicsTrainer/network:/app/network:ro
+      - ../FaceForensicsTrainer/trained_models:/app/trained_models:ro
+      - ../FaceForensicsTrainer/dataset:/app/dataset:ro
+    environment:
+      - WATCH_FOLDER=/data/input
+      - OUTPUT_FOLDER=/data/output
+    restart: unless-stopped
