@@ -2,34 +2,47 @@ FROM python:3.11-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    git \
-    wget \
-    libopencv-dev \
+# Install only runtime dependencies (removed build tools to save space)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
-    libxrender-dev \
+    libxrender1 \
     libgomp1 \
-    libx11-dev \
-    liblapack-dev \
-    libblas-dev \
-    libopenblas-dev \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /root/.cache
 
+# Copy only requirements first for better caching
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir torch torchvision torchaudio opencv-python numpy Pillow watchdog pytorch-lightning matplotlib && \
-    pip install --no-cache-dir dlib-bin
 
-COPY . .
+# Install PyTorch CPU-only version (much smaller than CUDA version)
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    torch==2.1.0+cpu \
+    torchvision==0.16.0+cpu \
+    torchaudio==2.1.0+cpu \
+    -f https://download.pytorch.org/whl/torch_stable.html && \
+    pip install --no-cache-dir \
+    opencv-python-headless==4.8.1.78 \
+    numpy==1.24.3 \
+    Pillow==10.1.0 \
+    watchdog==3.0.0 \
+    matplotlib==3.8.0 \
+    dlib-bin==19.24.6 && \
+    rm -rf /root/.cache/pip
+
+# Copy application files
+COPY playerModules/ ./playerModules/
+COPY trained_models/ ./trained_models/
+COPY app.py .
 
 ENV WATCH_FOLDER=/data/input
 ENV OUTPUT_FOLDER=/data/output
