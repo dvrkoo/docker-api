@@ -1,12 +1,24 @@
 """
 Pytest configuration file with shared fixtures for testing the FaceForensics detector.
 """
+import sys
+from pathlib import Path
+from unittest.mock import MagicMock
+
+# Add project root to Python path to allow importing app module
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Mock playerModules before importing app to avoid missing dependency errors
+sys.modules['playerModules'] = MagicMock()
+sys.modules['playerModules.mantranet'] = MagicMock()
+sys.modules['playerModules.model_functions'] = MagicMock()
+
 import pytest
 import numpy as np
 from PIL import Image
 import tempfile
 import os
-from pathlib import Path
 
 
 @pytest.fixture
