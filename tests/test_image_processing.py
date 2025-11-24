@@ -105,44 +105,36 @@ class TestFileTypeDetection:
     """Test file type detection and processing."""
     
     @patch('app.process_image')
-    @patch('app.process_video')
-    def test_process_file_detects_jpg(self, mock_video, mock_image):
+    def test_process_file_detects_jpg(self, mock_image):
         """Test that .jpg files are processed as images."""
         from app import process_file
         
         process_file("test.jpg")
         mock_image.assert_called_once_with("test.jpg")
-        mock_video.assert_not_called()
     
     @patch('app.process_image')
-    @patch('app.process_video')
-    def test_process_file_detects_png(self, mock_video, mock_image):
+    def test_process_file_detects_png(self, mock_image):
         """Test that .png files are processed as images."""
         from app import process_file
         
         process_file("test.png")
         mock_image.assert_called_once_with("test.png")
-        mock_video.assert_not_called()
     
     @patch('app.process_image')
-    @patch('app.process_video')
-    def test_process_file_detects_mp4(self, mock_video, mock_image):
-        """Test that .mp4 files are processed as videos."""
+    def test_process_file_skips_mp4(self, mock_image):
+        """Test that .mp4 files are skipped (video processing not supported)."""
         from app import process_file
         
         process_file("test.mp4")
-        mock_video.assert_called_once_with("test.mp4")
         mock_image.assert_not_called()
     
     @patch('app.process_image')
-    @patch('app.process_video')
-    def test_process_file_skips_unknown(self, mock_video, mock_image):
+    def test_process_file_skips_unknown(self, mock_image):
         """Test that unknown file types are skipped."""
         from app import process_file
         
         process_file("test.txt")
         mock_image.assert_not_called()
-        mock_video.assert_not_called()
 
 
 class TestCleanupResources:
