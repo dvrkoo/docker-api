@@ -34,7 +34,26 @@ docker-api/
 └── README.md
 ```
 
-## Setup
+## Quick Start (Using Pre-built Image)
+
+**Pull the latest image from GitHub Container Registry:**
+
+```bash
+docker pull ghcr.io/dvrkoo/docker-api/faceforensics-detector:latest
+```
+
+**Run the container:**
+
+```bash
+docker run -d \
+  -v $(pwd)/input:/data/input \
+  -v $(pwd)/output:/data/output \
+  -e WATCH_FOLDER=/data/input \
+  -e OUTPUT_FOLDER=/data/output \
+  ghcr.io/dvrkoo/docker-api/faceforensics-detector:latest
+```
+
+## Setup (Building from Source)
 
 1. Create input/output directories:
 ```bash
@@ -174,4 +193,24 @@ Current test coverage focuses on:
 
 ## CI/CD Status
 
-![Docker Build](https://github.com/YOUR_USERNAME/docker-api/actions/workflows/docker-build-test.yml/badge.svg)
+![Docker Build](https://github.com/dvrkoo/docker-api/actions/workflows/docker-build-test.yml/badge.svg)
+
+## Published Docker Images
+
+Pre-built Docker images are automatically published to GitHub Container Registry on every commit to main:
+
+- **Latest:** `ghcr.io/dvrkoo/docker-api/faceforensics-detector:latest`
+- **Main branch:** `ghcr.io/dvrkoo/docker-api/faceforensics-detector:main`
+- **Specific commits:** `ghcr.io/dvrkoo/docker-api/faceforensics-detector:main-<commit-sha>`
+
+### Available Tags
+
+View all available tags at:
+**https://github.com/dvrkoo/docker-api/pkgs/container/docker-api%2Ffaceforensics-detector**
+
+### Image Details
+
+- **Platform:** linux/amd64
+- **Size:** ~1.0 GB
+- **Base:** Python 3.11-slim
+- **PyTorch:** CPU-optimized version
