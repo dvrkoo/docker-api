@@ -23,13 +23,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy only requirements first for better caching
 COPY requirements.txt .
 
-# Install PyTorch CPU-only version (much smaller than CUDA version)
+# Install dependencies
+# Note: Using standard torch (not +cpu) for multi-architecture support
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
-    torch==2.1.0+cpu \
-    torchvision==0.16.0+cpu \
-    torchaudio==2.1.0+cpu \
-    -f https://download.pytorch.org/whl/torch_stable.html && \
+    torch==2.1.0 \
+    torchvision==0.16.0 \
+    torchaudio==2.1.0 \
+    --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir \
     opencv-python-headless==4.8.1.78 \
     numpy==1.24.3 \
