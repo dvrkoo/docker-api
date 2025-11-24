@@ -76,3 +76,4 @@ test_output/
 # Environment variables
 .env
 .env.local
+playerModules/mantranet.py.placeholder

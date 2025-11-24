@@ -32,6 +32,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     torchaudio==2.1.0 \
     --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir \
+    pytorch-lightning==2.1.0 \
     opencv-python-headless==4.8.1.78 \
     numpy==1.24.3 \
     Pillow==10.1.0 \
