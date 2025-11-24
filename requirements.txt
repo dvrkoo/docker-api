@@ -4,7 +4,7 @@ torchaudio==2.1.0
 opencv-python==4.8.1.78
 numpy==1.24.3
 Pillow==10.1.0
-dlib-bin==19.24.0
+dlib-bin==19.24.6
 watchdog==3.0.0
 pytorch-lightning==2.1.0
 matplotlib==3.8.0
