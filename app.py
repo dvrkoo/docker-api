@@ -1,10 +1,11 @@
 import time
 import os
 import sys
+
+import torch
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from playerModules.mantranet import pre_trained_model, check_forgery
-import torch
 from PIL import Image
 import numpy as np
 import queue
@@ -34,12 +35,14 @@ MantraNetmodel = pre_trained_model(
 
 def check_image_mantra(img_path):
     image = Image.open(img_path)
-    
+
+    # Convert to RGB if it's RGBA or grayscale
     if image.mode != "RGB":
         print(f"Converting image from {image.mode} to RGB")
         image = image.convert("RGB")
-    
-    figs = check_forgery(MantraNetmodel, img=image, device=device)
+
+    # Match FaceForensicsTrainer/api_test.py behavior
+    figs = check_forgery(MantraNetmodel, img_path=img_path, device=device)
     return figs
 
 

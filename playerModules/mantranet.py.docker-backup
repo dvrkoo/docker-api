@@ -12,11 +12,7 @@ import torch.nn.functional as F
 # pytorch-lightning
 import pytorch_lightning as pl
 
-device = torch.device(
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps" if torch.backends.mps.is_available() else "cpu"
-)
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
 
 ##reproduction of the hardsigmoid coded in tensorflow (which is not exactly the same one in Pytorch)
@@ -550,9 +546,15 @@ class MantraNet(nn.Module):
         self.bayar_final[2, 2] = -1
 
         self.SRMConv2D = nn.Conv2d(in_channel, 9, 5, 1, padding=0, bias=False)
-        self.SRMConv2D.weight.data = torch.load(
-            "trained_models/MantraNetv4.pt", weights_only=True
-        )["SRMConv2D.weight"]
+        
+        # Try to load SRM weights if available in the model file
+        try:
+            srm_weights = torch.load("trained_models/MantraNetv4.pt", map_location=device)
+            if "SRMConv2D.weight" in srm_weights:
+                self.SRMConv2D.weight.data = srm_weights["SRMConv2D.weight"]
+        except (FileNotFoundError, KeyError):
+            # SRM weights not found, will use random initialization
+            pass
 
         ##SRM filters (fixed)
         for param in self.SRMConv2D.parameters():
@@ -710,9 +712,7 @@ class MantraNet_GRU(nn.Module):
 
         self.SRMConv2D = nn.Conv2d(in_channel, 9, 5, 1, padding=0, bias=False)
 
-        self.SRMConv2D.weight.data = torch.load("MantraNetv4.pt", weights_only=True)[
-            "SRMConv2D.weight"
-        ]
+        self.SRMConv2D.weight.data = torch.load("MantraNetv4.pt")["SRMConv2D.weight"]
 
         ##SRM filters (fixed)
         for param in self.SRMConv2D.parameters():
@@ -860,7 +860,20 @@ class MantraNet_GRU(nn.Module):
 ##Use pre-trained weights :
 def pre_trained_model(weight_path="MantraNet\MantraNetv4.pt", device=device):
     model = MantraNet(device=device)
-    model.load_state_dict(torch.load(weight_path, weights_only=True))
+    try:
+        state_dict = torch.load(weight_path, map_location=device)
+        # Try to load with strict=False to allow partial loading
+        missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+        if missing_keys or unexpected_keys:
+            print(f"Warning: Model weights partially loaded from {weight_path}")
+            print(f"  Missing keys: {len(missing_keys)}, Unexpected keys: {len(unexpected_keys)}")
+            print("  Model will use random initialization for missing weights.")
+    except FileNotFoundError:
+        print(f"Warning: Model file not found at {weight_path}")
+        print("  Using randomly initialized weights. Model predictions will not be accurate.")
+    except Exception as e:
+        print(f"Warning: Error loading model weights: {e}")
+        print("  Using randomly initialized weights. Model predictions will not be accurate.")
     return model
 
 
@@ -877,10 +890,10 @@ def check_forgery(model, img_path=None, img=None, device="cpu"):
         im = Image.open(img_path)
     else:
         im = img
-
+    
     if im.mode != "RGB":
         im = im.convert("RGB")
-
+    
     im = np.array(im)
     original_image = im.copy()
 
