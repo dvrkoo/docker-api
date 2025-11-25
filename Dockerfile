@@ -32,6 +32,9 @@ RUN pip install --no-cache-dir --no-deps \
       --index-url https://download.pytorch.org/whl/cpu \
       torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
 
+# Install minimal dependencies that torch/torchvision/torchaudio need
+RUN pip install --no-cache-dir filelock sympy networkx jinja2 fsspec requests
+
 RUN python - << 'EOF'
 from pathlib import Path
 req_path = Path('requirements.txt')
