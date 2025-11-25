@@ -12,11 +12,15 @@ import torch.nn.functional as F
 # pytorch-lightning
 import pytorch_lightning as pl
 
-device = torch.device(
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps" if torch.backends.mps.is_available() else "cpu"
-)
+# Force CPU in Docker environments to avoid MPS incompatibility
+if os.getenv("FORCE_CPU", "false").lower() == "true":
+    device = torch.device("cpu")
+else:
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps" if torch.backends.mps.is_available() else "cpu"
+    )
 
 
 ##reproduction of the hardsigmoid coded in tensorflow (which is not exactly the same one in Pytorch)

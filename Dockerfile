@@ -50,6 +50,7 @@ COPY . .
 
 ENV WATCH_FOLDER=/data/input
 ENV OUTPUT_FOLDER=/data/output
+ENV FORCE_CPU=true
 
 RUN mkdir -p /data/input /data/output
 

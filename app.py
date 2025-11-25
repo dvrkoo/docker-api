@@ -22,11 +22,15 @@ print(f"Output folder: {output_folder}")
 os.makedirs(folder_to_watch, exist_ok=True)
 os.makedirs(output_folder, exist_ok=True)
 
-device = torch.device(
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps" if torch.backends.mps.is_available() else "cpu"
-)
+# Force CPU in Docker environments to avoid MPS incompatibility
+if os.getenv("FORCE_CPU", "false").lower() == "true":
+    device = torch.device("cpu")
+else:
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps" if torch.backends.mps.is_available() else "cpu"
+    )
 print(f"Using device: {device}")
 
 MantraNetmodel = pre_trained_model(
