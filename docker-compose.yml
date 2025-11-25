@@ -5,13 +5,10 @@ services:
     volumes:
       - ./input:/data/input
       - ./output:/data/output
-      - ../FaceForensicsTrainer/playerModules:/app/playerModules:ro
-      - ../FaceForensicsTrainer/network:/app/network:ro
-      - ../FaceForensicsTrainer/trained_models:/app/trained_models:ro
-      - ../FaceForensicsTrainer/dataset:/app/dataset:ro
     environment:
       - WATCH_FOLDER=/data/input
       - OUTPUT_FOLDER=/data/output
+      - FORCE_CPU=true
     restart: unless-stopped
     deploy:
       resources:
@@ -29,11 +26,8 @@ services:
     volumes:
       - ./input:/data/input
       - ./output:/data/output
-      - ../FaceForensicsTrainer/playerModules:/app/playerModules:ro
-      - ../FaceForensicsTrainer/network:/app/network:ro
-      - ../FaceForensicsTrainer/trained_models:/app/trained_models:ro
-      - ../FaceForensicsTrainer/dataset:/app/dataset:ro
     environment:
       - WATCH_FOLDER=/data/input
       - OUTPUT_FOLDER=/data/output
+      - FORCE_CPU=true
     restart: unless-stopped
