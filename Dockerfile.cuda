@@ -1,0 +1,70 @@
+# Dockerfile.cuda - CUDA build for NVIDIA GPU acceleration
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install Python 3.11 and system dependencies
+RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    libopencv-dev \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libx11-dev \
+    liblapack-dev \
+    libblas-dev \
+    libopenblas-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set python3.11 as default python
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install CUDA-enabled PyTorch from CUDA 12.1 index
+RUN pip install --no-cache-dir --no-deps \
+      --index-url https://download.pytorch.org/whl/cu121 \
+      torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
+
+# Install minimal dependencies that torch/torchvision/torchaudio need
+RUN pip install --no-cache-dir filelock sympy networkx jinja2 fsspec requests
+
+# Filter out torch packages from requirements.txt and install remaining dependencies
+RUN python - << 'EOF'
+from pathlib import Path
+req_path = Path('requirements.txt')
+lines = req_path.read_text().splitlines()
+skip = {'torch', 'torchvision', 'torchaudio'}
+filtered = [l for l in lines if not any(l.startswith(name + '==') for name in skip) and l.strip()]
+Path('requirements-no-torch.txt').write_text("\n".join(filtered) + "\n")
+EOF
+
+RUN pip install --no-cache-dir -r requirements-no-torch.txt
+
+COPY . .
+
+ENV WATCH_FOLDER=/data/input
+ENV OUTPUT_FOLDER=/data/output
+# Note: FORCE_CPU is NOT set - allows PyTorch to use CUDA
+
+RUN mkdir -p /data/input /data/output
+
+VOLUME ["/data/input", "/data/output"]
+
+CMD ["python", "app.py"]

@@ -115,11 +115,20 @@ jobs:
           echo "Image size: $(docker images ${{ env.DOCKER_IMAGE_NAME }}:test --format '{{.Size}}')"
 
   docker-build-multiarch:
-    name: Build Multi-Architecture Image
+    name: Build Multi-Architecture Images
     runs-on: ubuntu-latest
     needs: docker-build
     continue-on-error: true
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        variant:
+          - name: cpu
+            dockerfile: Dockerfile
+            suffix: ""
+          - name: cuda
+            dockerfile: Dockerfile.cuda
+            suffix: "-cuda"
     
     steps:
       - name: Checkout code
@@ -145,24 +154,24 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.DOCKER_IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch,suffix=${{ matrix.variant.suffix }}
+            type=ref,event=pr,suffix=${{ matrix.variant.suffix }}
+            type=semver,pattern={{version}},suffix=${{ matrix.variant.suffix }}
+            type=semver,pattern={{major}}.{{minor}},suffix=${{ matrix.variant.suffix }}
+            type=sha,prefix={{branch}}-,suffix=${{ matrix.variant.suffix }}
+            type=raw,value=latest${{ matrix.variant.suffix }},enable={{is_default_branch}}
       
-      - name: Build and push Docker image
+      - name: Build and push ${{ matrix.variant.name }} image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: ./${{ matrix.variant.dockerfile }}
           platforms: linux/amd64
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.variant.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant.name }}
 
   security-scan:
     name: Security Scan

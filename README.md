@@ -25,12 +25,17 @@ This is a containerized version of the FaceForensics detection system that watch
 
 ```
 docker-api/
-├── Dockerfile
-├── docker-compose.yml
-├── app.py
-├── requirements.txt
-├── input/          # Created automatically - place files here
-├── output/         # Created automatically - processed results
+├── Dockerfile              # CPU build (default)
+├── Dockerfile.cuda         # CUDA/GPU build
+├── Dockerfile.mps          # Apple Silicon build
+├── docker-compose.yml      # Multi-variant orchestration
+├── app.py                  # Main application
+├── requirements.txt        # Python dependencies
+├── test_native.sh          # Native execution script (M1/M2)
+├── input/                  # Created automatically - place files here
+├── output/                 # Created automatically - processed results
+├── playerModules/          # MantraNet model code
+├── trained_models/         # Pre-trained model weights
 └── README.md
 ```
 
@@ -67,22 +72,73 @@ docker-compose build
 
 ## Usage
 
-### CPU Mode (default)
+This project provides **three build variants** optimized for different hardware:
+
+| Variant | Hardware | Dockerfile | Use Case |
+|---------|----------|------------|----------|
+| **CPU** | Any x86_64 | `Dockerfile` | Cloud servers, production |
+| **CUDA** | NVIDIA GPU | `Dockerfile.cuda` | GPU-accelerated inference |
+| **MPS** | Apple Silicon | `Dockerfile.mps` | M1/M2 Macs (native only) |
+
+### CPU Mode (default - works everywhere)
 
 ```bash
 docker-compose up faceforensics-api-cpu
 ```
 
-### GPU Mode (requires NVIDIA GPU)
+**Image size:** ~600-800MB  
+**Performance:** Moderate, suitable for production  
+**Requirements:** None
+
+### CUDA Mode (NVIDIA GPU acceleration)
 
 ```bash
-docker-compose --profile gpu up faceforensics-api
+docker-compose --profile cuda up faceforensics-api-cuda
 ```
+
+**Image size:** ~4-5GB  
+**Performance:** Fast, GPU-accelerated  
+**Requirements:** 
+- NVIDIA GPU with CUDA support
+- NVIDIA Docker runtime installed
+- CUDA-compatible drivers
+
+**Install NVIDIA Docker runtime:**
+```bash
+# Ubuntu/Debian
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+sudo apt-get update && sudo apt-get install -y nvidia-docker2
+sudo systemctl restart docker
+```
+
+### MPS Mode (Apple Silicon - Native Execution Recommended)
+
+**Note:** MPS in Docker has known issues causing segfaults. Use native execution instead:
+
+```bash
+# Native execution (recommended for M1/M2 Macs)
+./test_native.sh
+```
+
+If you still want to try Docker on Apple Silicon:
+```bash
+docker-compose --profile mps up faceforensics-api-mps
+```
+
+**Image size:** ~1-1.5GB  
+**Performance:** Varies (native is fast, Docker may crash)  
+**Requirements:** Apple Silicon Mac (M1/M2/M3)
 
 ### Running in Background
 
 ```bash
+# CPU mode
 docker-compose up -d faceforensics-api-cpu
+
+# CUDA mode
+docker-compose --profile cuda up -d faceforensics-api-cuda
 ```
 
 ### Stopping the Service
@@ -210,7 +266,20 @@ View all available tags at:
 
 ### Image Details
 
+**CPU Variant (default):**
 - **Platform:** linux/amd64
-- **Size:** ~1.0 GB
+- **Size:** ~600-800MB
 - **Base:** Python 3.11-slim
-- **PyTorch:** CPU-optimized version
+- **PyTorch:** CPU-optimized (2.1.0+cpu)
+
+**CUDA Variant:**
+- **Platform:** linux/amd64
+- **Size:** ~4-5GB
+- **Base:** nvidia/cuda:12.1.0-runtime-ubuntu22.04
+- **PyTorch:** CUDA-enabled (2.1.0+cu121)
+
+**MPS Variant:**
+- **Platform:** linux/arm64
+- **Size:** ~1-1.5GB
+- **Base:** Python 3.11
+- **PyTorch:** ARM64 native with MPS support

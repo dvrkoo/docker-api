@@ -1,27 +1,9 @@
 services:
-  faceforensics-api:
-    build: .
-    container_name: faceforensics-detector
-    volumes:
-      - ./input:/data/input
-      - ./output:/data/output
-    environment:
-      - WATCH_FOLDER=/data/input
-      - OUTPUT_FOLDER=/data/output
-      - FORCE_CPU=true
-    restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    profiles:
-      - gpu
-
+  # CPU service - Default, works everywhere
   faceforensics-api-cpu:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: faceforensics-detector-cpu
     volumes:
       - ./input:/data/input
@@ -31,3 +13,44 @@ services:
       - OUTPUT_FOLDER=/data/output
       - FORCE_CPU=true
     restart: unless-stopped
+
+  # CUDA service - For NVIDIA GPU acceleration
+  faceforensics-api-cuda:
+    build:
+      context: .
+      dockerfile: Dockerfile.cuda
+    container_name: faceforensics-detector-cuda
+    volumes:
+      - ./input:/data/input
+      - ./output:/data/output
+    environment:
+      - WATCH_FOLDER=/data/input
+      - OUTPUT_FOLDER=/data/output
+      - NVIDIA_VISIBLE_DEVICES=all
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles:
+      - cuda
+
+  # MPS service - For Apple Silicon (M1/M2) - Native execution recommended
+  # Note: Docker with MPS has known issues. Use ./test_native.sh for local development instead.
+  faceforensics-api-mps:
+    build:
+      context: .
+      dockerfile: Dockerfile.mps
+    container_name: faceforensics-detector-mps
+    volumes:
+      - ./input:/data/input
+      - ./output:/data/output
+    environment:
+      - WATCH_FOLDER=/data/input
+      - OUTPUT_FOLDER=/data/output
+    restart: unless-stopped
+    profiles:
+      - mps
