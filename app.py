@@ -11,8 +11,9 @@ import numpy as np
 import queue
 import threading
 
-folder_to_watch = os.getenv("WATCH_FOLDER", "/data/input")
-output_folder = os.getenv("OUTPUT_FOLDER", "/data/output")
+# Default to local folders if running natively, Docker paths if in container
+folder_to_watch = os.getenv("WATCH_FOLDER", "./input" if not os.path.exists("/data") else "/data/input")
+output_folder = os.getenv("OUTPUT_FOLDER", "./output" if not os.path.exists("/data") else "/data/output")
 
 print(f"Starting Face Forensics API")
 print(f"Watch folder: {folder_to_watch}")
