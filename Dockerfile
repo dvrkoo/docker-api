@@ -25,8 +25,23 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt -f https://download.pytorch.org/whl/cpu
+
+RUN pip install --no-cache-dir --upgrade pip
+
+RUN pip install --no-cache-dir --no-deps \
+      --index-url https://download.pytorch.org/whl/cpu \
+      torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
+
+RUN python - << 'EOF'
+from pathlib import Path
+req_path = Path('requirements.txt')
+lines = req_path.read_text().splitlines()
+skip = {'torch', 'torchvision', 'torchaudio'}
+filtered = [l for l in lines if not any(l.startswith(name + '==') for name in skip) and l.strip()]
+Path('requirements-no-torch.txt').write_text("\n".join(filtered) + "\n")
+EOF
+
+RUN pip install --no-cache-dir -r requirements-no-torch.txt
 
 COPY . .
 
