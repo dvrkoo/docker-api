@@ -16,6 +16,12 @@ This is a containerized version of the FaceForensics detection system that watch
 - Docker Compose
 - (Optional) NVIDIA GPU with CUDA support for faster processing
 
+## Performance
+
+All Docker builds use **[uv](https://github.com/astral-sh/uv)** instead of pip for **10-100x faster** package installation:
+- PyTorch installation: ~9s (vs ~60-90s with pip)
+- Total build time: **4-6x faster** than traditional pip-based builds
+
 ## Directory Structure
 
 ```

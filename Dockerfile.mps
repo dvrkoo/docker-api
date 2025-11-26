@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     cmake \
     git \
     wget \
+    curl \
     libopencv-dev \
     libgl1 \
     libglib2.0-0 \
@@ -28,10 +29,12 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 
-# Install all dependencies from requirements.txt
+# Install uv for faster package installation
+RUN pip install --no-cache-dir uv
+
+# Install all dependencies from requirements.txt using uv (10-100x faster than pip)
 # PyPI will automatically select ARM64-compatible wheels
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --system --no-cache -r requirements.txt
 
 COPY . .
 

@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     cmake \
     git \
     wget \
+    curl \
     libopencv-dev \
     libgl1 \
     libglib2.0-0 \
@@ -26,14 +27,17 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade pip
+# Install uv for faster package installation
+RUN pip install --no-cache-dir uv
 
-RUN pip install --no-cache-dir --no-deps \
+# Install PyTorch CPU wheels using uv (10-100x faster than pip)
+RUN uv pip install --system --no-cache \
       --index-url https://download.pytorch.org/whl/cpu \
       torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
 
 # Install minimal dependencies that torch/torchvision/torchaudio need
-RUN pip install --no-cache-dir filelock sympy networkx jinja2 fsspec requests
+RUN uv pip install --system --no-cache \
+      filelock sympy networkx jinja2 fsspec requests
 
 RUN python - << 'EOF'
 from pathlib import Path
@@ -44,7 +48,7 @@ filtered = [l for l in lines if not any(l.startswith(name + '==') for name in sk
 Path('requirements-no-torch.txt').write_text("\n".join(filtered) + "\n")
 EOF
 
-RUN pip install --no-cache-dir -r requirements-no-torch.txt
+RUN uv pip install --system --no-cache -r requirements-no-torch.txt
 
 COPY . .
 
