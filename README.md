@@ -1,19 +1,14 @@
 # FaceForensics Detector - Docker API
 
-This is a containerized version of the FaceForensics detection system that watches a folder for new images/videos and automatically processes them to detect deepfakes.
+This is a containerized version of the FaceForensics detection system that watches a folder for new images and automatically processes them to detect deepfakes.
 
 ## Features
 
-- Watches a folder for new image/video files
-- Automatically detects deepfakes using multiple models:
-  - MantraNet
-  - FaceSwap
-  - DeepFake
-  - NeuralTextures
-  - Face2Face
-  - FaceShifter
-- Outputs processed results with annotations
+- Watches a folder for new image files
+- Automatically detects deepfakes using MantraNet model
+- Outputs processed results with detection masks and annotations
 - Supports both GPU (CUDA) and CPU modes
+- Image detection only (supports .jpg, .png formats)
 
 ## Prerequisites
 
@@ -150,11 +145,9 @@ docker-compose down
 ## How It Works
 
 1. The container starts and monitors the `./input` folder
-2. Drop an image (.jpg, .png) or video (.mp4) into the `./input` folder
-3. The system automatically processes the file
-4. Results appear in the `./output` folder:
-   - For images: Multiple output images showing detection masks
-   - For videos: Annotated video with bounding boxes + JSON with predictions
+2. Drop an image (.jpg, .png) into the `./input` folder
+3. The system automatically processes the image using MantraNet
+4. Results appear in the `./output` folder with detection masks showing manipulated regions
 
 ## Environment Variables
 
@@ -178,7 +171,7 @@ docker-compose logs -f
 
 ### No output files
 - Check container logs for errors
-- Ensure input files are valid images (.jpg, .png) or videos (.mp4)
+- Ensure input files are valid images (.jpg, .png)
 - Verify trained_models directory is accessible
 
 ### Slow processing
@@ -236,7 +229,7 @@ View the build status and coverage reports in the GitHub Actions tab.
 
 Current test coverage focuses on:
 - Image processing and format conversion
-- Video processing and face detection
+- MantraNet model integration
 - File type detection and routing
 - GPU memory management
 - File watching and queue management
