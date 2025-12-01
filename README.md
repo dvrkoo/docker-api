@@ -263,6 +263,62 @@ Pre-built Docker images are automatically published to GitHub Container Registry
 View all available tags at:
 **https://github.com/dvrkoo/docker-api/pkgs/container/docker-api%2Ffaceforensics-detector**
 
+### Pull and Run Pre-built Images
+
+#### CPU Version (Works Everywhere)
+
+**Pull the image:**
+```bash
+docker pull ghcr.io/dvrkoo/docker-api/faceforensics-detector:latest
+```
+
+**Run the container:**
+```bash
+docker run -d \
+  --name faceforensics-cpu \
+  -v $(pwd)/input:/data/input \
+  -v $(pwd)/output:/data/output \
+  -e WATCH_FOLDER=/data/input \
+  -e OUTPUT_FOLDER=/data/output \
+  -e FORCE_CPU=true \
+  ghcr.io/dvrkoo/docker-api/faceforensics-detector:latest
+```
+
+**Use case:** Production servers, cloud environments, or any system without NVIDIA GPU  
+**Performance:** Moderate speed, suitable for most workloads
+
+#### CUDA Version (NVIDIA GPU Acceleration)
+
+**Pull the image:**
+```bash
+docker pull ghcr.io/dvrkoo/docker-api/faceforensics-detector:cuda
+```
+
+**Run the container:**
+```bash
+docker run -d \
+  --name faceforensics-cuda \
+  --gpus all \
+  -v $(pwd)/input:/data/input \
+  -v $(pwd)/output:/data/output \
+  -e WATCH_FOLDER=/data/input \
+  -e OUTPUT_FOLDER=/data/output \
+  -e NVIDIA_VISIBLE_DEVICES=all \
+  ghcr.io/dvrkoo/docker-api/faceforensics-detector:cuda
+```
+
+**Requirements:**
+- NVIDIA GPU with CUDA support
+- NVIDIA Container Toolkit installed ([Installation Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html))
+
+**Use case:** GPU-accelerated servers for faster inference  
+**Performance:** 5-10x faster than CPU, ideal for high-throughput workloads
+
+**Verify GPU access:**
+```bash
+docker run --rm --gpus all ghcr.io/dvrkoo/docker-api/faceforensics-detector:cuda nvidia-smi
+```
+
 ### Image Details
 
 **CPU Variant (default):**
