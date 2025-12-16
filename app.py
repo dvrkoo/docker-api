@@ -1,6 +1,7 @@
 import time
 import os
 import sys
+import logging
 
 import torch
 from watchdog.observers import Observer
@@ -11,13 +12,17 @@ import numpy as np
 import queue
 import threading
 
+# Initialize logging configuration
+import logger_config
+logger = logging.getLogger(__name__)
+
 # Default to local folders if running natively, Docker paths if in container
 folder_to_watch = os.getenv("WATCH_FOLDER", "./input" if not os.path.exists("/data") else "/data/input")
 output_folder = os.getenv("OUTPUT_FOLDER", "./output" if not os.path.exists("/data") else "/data/output")
 
-print(f"Starting Face Forensics API")
-print(f"Watch folder: {folder_to_watch}")
-print(f"Output folder: {output_folder}")
+logger.info("Starting Face Forensics API")
+logger.info(f"Watch folder: {folder_to_watch}")
+logger.info(f"Output folder: {output_folder}")
 
 os.makedirs(folder_to_watch, exist_ok=True)
 os.makedirs(output_folder, exist_ok=True)
@@ -31,7 +36,7 @@ else:
         if torch.cuda.is_available()
         else "mps" if torch.backends.mps.is_available() else "cpu"
     )
-print(f"Using device: {device}")
+logger.info(f"Using device: {device}")
 
 MantraNetmodel = pre_trained_model(
     weight_path="trained_models/MantraNetv4.pt", device=device
@@ -43,7 +48,7 @@ def check_image_mantra(img_path):
 
     # Convert to RGB if it's RGBA or grayscale
     if image.mode != "RGB":
-        print(f"Converting image from {image.mode} to RGB")
+        logger.info(f"Converting image from {image.mode} to RGB")
         image = image.convert("RGB")
 
     # Match FaceForensicsTrainer/api_test.py behavior
@@ -52,10 +57,10 @@ def check_image_mantra(img_path):
 
 
 def process_image(file_path):
-    print("Image detected")
+    logger.info("Image detected")
     figs = check_image_mantra(file_path)
-    print("Figures Processed")
-    print(f"Output folder: {output_folder}")
+    logger.info("Figures Processed")
+    logger.info(f"Output folder: {output_folder}")
     os.makedirs(output_folder, exist_ok=True)
 
     base_name = os.path.basename(file_path)
@@ -81,17 +86,17 @@ def process_image(file_path):
                 pil_img = pil_img.convert("L")
 
             pil_img.save(output_file_path)
-            print(f"Saved {key} image to: {output_file_path}")
+            logger.info(f"Saved {key} image to: {output_file_path}")
         except Exception as e:
-            print(f"Error saving {key} image: {e}")
+            logger.error(f"Error saving {key} image: {e}")
 
 
 def process_file(file_path):
-    print(f"Processing file: {file_path}")
+    logger.info(f"Processing file: {file_path}")
     if file_path.endswith(".jpg") or file_path.endswith(".png"):
         process_image(file_path)
     else:
-        print("The file is not a supported image format. Skipping.")
+        logger.warning("The file is not a supported image format. Skipping.")
 
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -105,7 +110,7 @@ file_queue = queue.Queue()
 class FileCreatedHandler(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory:
-            print(f"New file detected and queued: {event.src_path}")
+            logger.info(f"New file detected and queued: {event.src_path}")
             file_queue.put(event.src_path)
 
 
@@ -115,15 +120,15 @@ def worker():
         try:
             process_file(file_path)
         except Exception as e:
-            print(f"Error processing {file_path}: {e}")
+            logger.error(f"Error processing {file_path}: {e}")
             import traceback
-            traceback.print_exc()
+            logger.exception("Full traceback:")
         finally:
             file_queue.task_done()
 
 
 def main():
-    print(f"Monitoring folder: {folder_to_watch}")
+    logger.info(f"Monitoring folder: {folder_to_watch}")
 
     event_handler = FileCreatedHandler()
     observer = Observer()
@@ -136,7 +141,7 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("Stopping observer...")
+        logger.info("Stopping observer...")
         observer.stop()
     observer.join()
 

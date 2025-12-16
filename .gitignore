@@ -64,6 +64,8 @@ input/*
 !input/.gitkeep
 output/*
 !output/.gitkeep
+logs/*
+!logs/.gitkeep
 test_input/
 test_output/
 

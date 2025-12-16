@@ -64,10 +64,11 @@ COPY . .
 
 ENV WATCH_FOLDER=/data/input
 ENV OUTPUT_FOLDER=/data/output
+ENV LOG_FILE=/data/logs/app.log
 # Note: FORCE_CPU is NOT set - allows PyTorch to use CUDA
 
-RUN mkdir -p /data/input /data/output
+RUN mkdir -p /data/input /data/output /data/logs
 
-VOLUME ["/data/input", "/data/output"]
+VOLUME ["/data/input", "/data/output", "/data/logs"]
 
 CMD ["python", "app.py"]

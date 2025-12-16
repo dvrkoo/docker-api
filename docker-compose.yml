@@ -8,9 +8,11 @@ services:
     volumes:
       - ./input:/data/input
       - ./output:/data/output
+      - ./logs:/data/logs
     environment:
       - WATCH_FOLDER=/data/input
       - OUTPUT_FOLDER=/data/output
+      - LOG_FILE=/data/logs/app.log
       - FORCE_CPU=true
     restart: unless-stopped
 
@@ -23,9 +25,11 @@ services:
     volumes:
       - ./input:/data/input
       - ./output:/data/output
+      - ./logs:/data/logs
     environment:
       - WATCH_FOLDER=/data/input
       - OUTPUT_FOLDER=/data/output
+      - LOG_FILE=/data/logs/app.log
       - NVIDIA_VISIBLE_DEVICES=all
     restart: unless-stopped
     deploy:
@@ -48,9 +52,11 @@ services:
     volumes:
       - ./input:/data/input
       - ./output:/data/output
+      - ./logs:/data/logs
     environment:
       - WATCH_FOLDER=/data/input
       - OUTPUT_FOLDER=/data/output
+      - LOG_FILE=/data/logs/app.log
     restart: unless-stopped
     profiles:
       - mps

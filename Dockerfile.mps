@@ -40,10 +40,11 @@ COPY . .
 
 ENV WATCH_FOLDER=/data/input
 ENV OUTPUT_FOLDER=/data/output
+ENV LOG_FILE=/data/logs/app.log
 ENV FORCE_CPU=true
 
-RUN mkdir -p /data/input /data/output
+RUN mkdir -p /data/input /data/output /data/logs
 
-VOLUME ["/data/input", "/data/output"]
+VOLUME ["/data/input", "/data/output", "/data/logs"]
 
 CMD ["python", "app.py"]
