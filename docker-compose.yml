@@ -1,6 +1,6 @@
 services:
   # CPU service - Default, works everywhere
-  faceforensics-api-cpu:
+  faceforensics-detector-cpu:
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   # CUDA service - For NVIDIA GPU acceleration
-  faceforensics-api-cuda:
+  faceforensics-detector-cuda:
     build:
       context: .
       dockerfile: Dockerfile.cuda
@@ -44,7 +44,7 @@ services:
 
   # MPS service - For Apple Silicon (M1/M2) - Native execution recommended
   # Note: Docker with MPS has known issues. Use ./test_native.sh for local development instead.
-  faceforensics-api-mps:
+  faceforensics-detector-mps:
     build:
       context: .
       dockerfile: Dockerfile.mps
